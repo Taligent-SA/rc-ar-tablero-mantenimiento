@@ -1,0 +1,136 @@
+/// Grano: 1 fila por transacción de inventario (check-out, ajuste) registrada en eMaint.
+table 'Movimientos de Inventario'
+	lineageTag: 41289fd1-6a94-4098-a8a7-1ed4046c15c8
+
+	column 'N° Transacción'
+		dataType: int64
+		lineageTag: 4c19f2b1-7cd8-4212-9755-0a5a4d34d909
+		summarizeBy: sum
+		sourceColumn: N° Transacción
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha Transacción'
+		dataType: dateTime
+		lineageTag: 03d318b2-0ed5-4bac-8db0-71bd2d1cd42d
+		summarizeBy: none
+		sourceColumn: Fecha Transacción
+
+		annotation SummarizationSetBy = Automatic
+
+	column Usuario
+		dataType: string
+		lineageTag: eabcdf4c-7267-4cb7-b490-85a11f0fd2c0
+		summarizeBy: none
+		sourceColumn: Usuario
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'N° Parte'
+		dataType: string
+		lineageTag: 9c3e2d8e-84f0-44c5-a332-6df6f62842fd
+		summarizeBy: none
+		sourceColumn: N° Parte
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Descripción de la Parte'
+		dataType: string
+		lineageTag: 6d4970dd-5ea1-46c5-aeff-516f1a8a8685
+		summarizeBy: none
+		sourceColumn: Descripción de la Parte
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cantidad
+		dataType: double
+		lineageTag: 482e2072-63e6-4749-874f-844b7e164c43
+		summarizeBy: sum
+		sourceColumn: Cantidad
+
+		annotation SummarizationSetBy = Automatic
+
+	column Lote
+		dataType: string
+		lineageTag: 4bbf2241-a039-4cdb-bd61-d6f6e3470da1
+		summarizeBy: none
+		sourceColumn: Lote
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Costo Unitario'
+		dataType: double
+		formatString: $ #,0.00
+		lineageTag: f43fc5bc-af87-4292-afca-8af17b872e45
+		summarizeBy: sum
+		sourceColumn: Costo Unitario
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Costo Total'
+		dataType: double
+		formatString: $ #,0.00
+		lineageTag: 10eba0e4-0b10-49e4-9266-7fbf82786cf1
+		summarizeBy: sum
+		sourceColumn: Costo Total
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Costo Stock Actual'
+		dataType: double
+		formatString: $ #,0.00
+		lineageTag: 3178eaec-0f9b-462d-a755-265ed2432549
+		summarizeBy: sum
+		sourceColumn: Costo Stock Actual
+
+		annotation SummarizationSetBy = Automatic
+
+	column Operación
+		dataType: string
+		lineageTag: 32af0154-c9c0-40b1-b5b6-825a74dfe124
+		summarizeBy: none
+		sourceColumn: Operación
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Motivo de Ajuste'
+		dataType: string
+		lineageTag: 766b7d41-be65-46ec-84ad-b3d74e859174
+		summarizeBy: none
+		sourceColumn: Motivo de Ajuste
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Descripción de la OT'
+		dataType: string
+		lineageTag: f30ea055-d5d4-4fa3-9846-16c210850a56
+		summarizeBy: none
+		sourceColumn: Descripción de la OT
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'N° OT'
+		dataType: int64
+		lineageTag: 061aaf76-0944-4a7a-ab7d-6bf11554d04f
+		summarizeBy: sum
+		sourceColumn: N° OT
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Movimientos de Inventario' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaCarpeta & "Diario-de-Inventario.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    Renombrado = Table.RenameColumns(Encabezados, {{"N°Transacción", "N° Transacción"},{"Fecha de transacción", "Fecha Transacción"},{"Creado por", "Usuario"},{"Número de pieza", "N° Parte"},{"Descripción", "Descripción de la Parte"},{"Ajuste", "Motivo de Ajuste"},{"Orden de trabajo", "Descripción de la OT"},{"N°OT", "N° OT"}}),
+				    Seleccionadas = Table.SelectColumns(Renombrado, {"N° Transacción","Fecha Transacción","Usuario","N° Parte","Descripción de la Parte","Cantidad","Lote","Costo Unitario","Costo Total","Costo Stock Actual","Operación","Motivo de Ajuste","Descripción de la OT","N° OT"}),
+				    Tipos = Table.TransformColumnTypes(Seleccionadas, {{"N° Transacción", Int64.Type},{"Cantidad", type number},{"Costo Unitario", type number},{"Costo Stock Actual", type number}}),
+				    ParsearFechaTexto = (v as any) as nullable datetime =>
+				        if v = null or v = "" then null else try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy HH:mm", Culture="es-AR"]) otherwise null,
+				    ConFecha = Table.TransformColumns(Tipos, {{"Fecha Transacción", ParsearFechaTexto, type nullable datetime}}),
+				    LimpiarCostoTotal = Table.TransformColumns(ConFecha, {{"Costo Total", each if _ = null or _ = "" then null else let sinSimbolo = Text.Trim(Text.Replace(Text.Replace(Text.From(_), "$", ""), " ", "")), sinMilesConComaDecimal = Text.Replace(Text.Replace(sinSimbolo, ".", ""), ",", "."), valor = Number.FromText(sinMilesConComaDecimal) in valor, type nullable number}}),
+				    ConIdOT = Table.TransformColumns(LimpiarCostoTotal, {{"N° OT", each try Int64.From(_) otherwise null, Int64.Type}})
+				in
+				    ConIdOT
+

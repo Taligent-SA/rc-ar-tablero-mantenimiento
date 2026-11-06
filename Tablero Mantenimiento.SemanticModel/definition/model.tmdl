@@ -1,0 +1,31 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-AR
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode","MCP-PBIModeling"]
+
+annotation PBI_QueryOrder = ["Órdenes de Trabajo","Cargos Laborales","Movimientos de Inventario","Acciones BDA","Partes","RutaCarpeta"]
+
+ref table 'Cargos Laborales'
+ref table 'Movimientos de Inventario'
+ref table 'Acciones BDA'
+ref table Partes
+ref table 'Código de Actividad'
+ref table 'Código de Causa'
+ref table 'Código de Daño'
+ref table Calendario
+ref table _Medidas
+ref table 'Orden de Trabajo'
+ref table 'Fallas de Orden de Trabajo'
+ref table 'Trigger de Avería'
+ref table 'Objetivo Cumplimiento BDA'
+
+ref cultureInfo es-ES
+

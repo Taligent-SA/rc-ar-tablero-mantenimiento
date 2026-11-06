@@ -1,0 +1,349 @@
+/// Tabla dedicada de medidas DAX, organizada por módulo de negocio en carpetas de visualización.
+table _Medidas
+	lineageTag: b87a16bb-65ea-4217-a81e-6437d0184b08
+
+	/// Cantidad de ordenes de trabajo (incidentes) de tipo reactivo (PM02). Cuenta OT, no fallas. ADVERTENCIA: no usar en un visual con Calendario en el eje -- el 96% de las filas no tiene 'Fecha Inicio Inactividad' cargada, con lo cual una tendencia mensual mostraria casi vacio. Usar como tarjeta general o cortada por Area/Linea/Equipo/Codigo, no por fecha.
+	measure '# de Breakdowns' = CALCULATE(COUNTROWS('Orden de Trabajo'), 'Orden de Trabajo'[Tipo de Orden de Trabajo] = "PM02 - Reactivo")
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 9a85d5a6-8cc7-467b-aef9-d1fdc8d4ec56
+
+	/// Breakdowns reactivos (PM02) cuya actividad fue reparacion efectiva (FIX). Base del Pareto de averias. Mismo caveat que [# de Breakdowns]: no filtrar por Calendario.
+	measure '# de Breakdowns FIX' = CALCULATE([# de Breakdowns], 'Orden de Trabajo'[Tipo de Actividad] = "FIX - Reparación")
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 3a87cbbf-6491-4869-8f4a-170895c20ec6
+
+	/// Breakdowns reactivos (PM02) que fueron asistencia a produccion. Mismo caveat que [# de Breakdowns]: no filtrar por Calendario.
+	measure '# de Breakdowns Asistencia' = CALCULATE([# de Breakdowns], 'Orden de Trabajo'[Tipo de Actividad] = "ASP - Asistencia a Producción")
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 63000984-e934-44f8-831a-0d450691301b
+
+	/// Breakdowns cuyo tiempo de inactividad consolidado por OT supero el trigger de averia mayor (parametro [Trigger de Avería (min)], 60 por defecto). Mismo caveat que [# de Breakdowns]: no filtrar por Calendario (y ademas este dato solo existe para el subconjunto con downtime cargado).
+	measure '# de Breakdowns Mayores' =
+			CALCULATE(
+			    [# de Breakdowns],
+			    FILTER('Orden de Trabajo', NOT ISBLANK('Orden de Trabajo'[Minutos de Inactividad]) && 'Orden de Trabajo'[Minutos de Inactividad] >= [Trigger de Avería (min)])
+			)
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 637392e6-4b1b-4064-a349-6017430447a1
+
+	/// Proporción de breakdowns que superaron el trigger de averia mayor sobre el total de breakdowns reactivos.
+	measure '% de Breakdowns Mayores' = DIVIDE([# de Breakdowns Mayores], [# de Breakdowns])
+		formatString: 0.0%
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: 3f171a43-a353-4dcc-883c-7d8bd463f85c
+
+	/// Suma de minutos de inactividad por breakdowns reactivos, consolidados por OT. Cobertura muy parcial: solo ~4% de las OT reactivas tienen el downtime cargado (con fecha). No usar en un visual con Calendario en el eje.
+	measure 'Minutos de Inactividad Totales' = CALCULATE(SUM('Orden de Trabajo'[Minutos de Inactividad]), 'Orden de Trabajo'[Tipo de Orden de Trabajo] = "PM02 - Reactivo")
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 9d15c413-9931-44ba-868c-da5eb93fddc8
+
+	/// Promedio de minutos de inactividad por breakdown reactivo (a nivel OT), considerando solo las OT con downtime cargado (~4% del total). No usar en un visual con Calendario en el eje.
+	measure 'Minutos de Inactividad Promedio' = AVERAGEX(FILTER('Orden de Trabajo', 'Orden de Trabajo'[Tipo de Orden de Trabajo] = "PM02 - Reactivo" && 'Orden de Trabajo'[Minutos de Inactividad] <> BLANK()), 'Orden de Trabajo'[Minutos de Inactividad])
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: 961881c9-e22d-40e5-ae69-79685389395a
+
+	/// Cantidad total de BDA (Breakdown Analysis) distintos registrados, sumatoria total conocida como 'BD RVP'.
+	measure '# de BDA (BD RVP)' = DISTINCTCOUNT('Acciones BDA'[BDA])
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: be34b22c-cc78-4101-998c-a49e18ef4bbf
+
+	/// Cantidad de BDA cuyas acciones estan TODAS en estado Done o Cancelado (ningun BDA se cuenta como cerrado si le queda al menos una accion pendiente/en curso).
+	measure '# de BDA Cerrados' =
+			VAR BDAsAbiertos = CALCULATETABLE(VALUES('Acciones BDA'[BDA]), FILTER('Acciones BDA', 'Acciones BDA'[Estado] <> "Done" && 'Acciones BDA'[Estado] <> "Cancelado"))
+			RETURN CALCULATE(DISTINCTCOUNT('Acciones BDA'[BDA]), EXCEPT(VALUES('Acciones BDA'[BDA]), BDAsAbiertos))
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: 923fc6b0-cbcf-4cfc-a3e5-b67c0a97d89c
+
+	/// BDA que tienen al menos una accion todavia no cerrada (estado distinto de Done/Cancelado).
+	measure '# de BDA Abiertos' = [# de BDA (BD RVP)] - [# de BDA Cerrados]
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: a39cc928-3f30-4a12-ae02-af45867f199e
+
+	/// De los BDA realmente abiertos (con alguna accion sin cerrar), cuantos llevan mas de 30 dias desde su apertura.
+	measure '# de BDA Abiertos + 30 Dias' =
+			VAR BDAsAbiertos = CALCULATETABLE(VALUES('Acciones BDA'[BDA]), FILTER('Acciones BDA', 'Acciones BDA'[Estado] <> "Done" && 'Acciones BDA'[Estado] <> "Cancelado"))
+			RETURN CALCULATE(DISTINCTCOUNT('Acciones BDA'[BDA]), BDAsAbiertos, 'Acciones BDA'[Abierta hace más de 30 Días] = TRUE)
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\KPIs
+		lineageTag: cb517404-67eb-4774-acf6-86126cadf2c0
+
+	/// Porcentaje de BDA que llegaron a estado Done sobre el total de BDA registrados.
+	measure '% Cumplimiento BDA' = DIVIDE([# de BDA Cerrados], [# de BDA (BD RVP)])
+		formatString: 0.0%
+		displayFolder: 2. Ciclo de Vida BDA\KPIs
+		lineageTag: af38f4c5-4bb4-4239-b76a-cc4e3f00bb0c
+
+	/// Cantidad total de acciones correctivas registradas sobre los BDA.
+	measure '# de Acciones Totales' = COUNTROWS('Acciones BDA')
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: 3b97db9d-3fe3-44da-86c2-f9b72aace78d
+
+	/// Cantidad de acciones correctivas con estado Done.
+	measure '# de Acciones Completadas' = CALCULATE([# de Acciones Totales], 'Acciones BDA'[Estado] = "Done")
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: 001ed2f8-0449-40d2-b41d-e7b549590616
+
+	/// Acciones correctivas que todavia no llegaron a estado Done.
+	measure '# de Acciones sin Cerrar' = [# de Acciones Totales] - [# de Acciones Completadas]
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\Base
+		lineageTag: 9e9e5719-b909-4f16-a041-1d974f47c2f2
+
+	/// Promedio de dias entre apertura y cierre de los BDA cerrados. Mide la velocidad de resolucion del ciclo de vida BDA.
+	measure 'Días Promedio hasta Cierre' =
+			VAR TablaCerrados = FILTER('Acciones BDA', 'Acciones BDA'[Estado] = "Done" && 'Acciones BDA'[Fecha de Apertura] <> BLANK() && 'Acciones BDA'[Fecha de Cierre] <> BLANK())
+			RETURN AVERAGEX(TablaCerrados, DATEDIFF('Acciones BDA'[Fecha de Apertura], 'Acciones BDA'[Fecha de Cierre], DAY))
+		formatString: #,0
+		displayFolder: 2. Ciclo de Vida BDA\KPIs
+		lineageTag: 303eb750-94d5-49d3-84ce-11541ccf8e7e
+
+	/// Promedio de acciones registradas por usuario responsable. Indicador de carga de trabajo por persona pedido por el cliente.
+	measure '% Acciones por Usuario' = DIVIDE([# de Acciones Totales], DISTINCTCOUNT('Acciones BDA'[Responsable]))
+		formatString: #,0.0
+		displayFolder: 2. Ciclo de Vida BDA\KPIs
+		lineageTag: 68fc9d80-a97a-465e-930c-6ba5c0a80497
+
+	/// Porcentaje de ordenes de trabajo ejecutadas en modalidad planeada (preventivo/regulatorio) sobre el total de OT.
+	measure '% de Trabajo Planeado' =
+			DIVIDE(
+			    CALCULATE(COUNTROWS('Orden de Trabajo'), 'Orden de Trabajo'[Tipo de Orden de Trabajo] IN {"PM03 - Preventivo", "PM05 - Regulatorio"}),
+			    COUNTROWS('Orden de Trabajo')
+			)
+		formatString: 0.0%
+		displayFolder: 3. Planning & Scheduling\KPIs
+		lineageTag: 5bd2a207-f318-4184-b372-c386d8ff9f27
+
+	/// Cantidad de ordenes de trabajo abiertas (O) o en espera (H), pendientes de ejecucion.
+	measure 'Backlog de Órdenes de Trabajo' = CALCULATE(COUNTROWS('Orden de Trabajo'), 'Orden de Trabajo'[Estado de WO] IN {"O", "H"})
+		formatString: #,0
+		displayFolder: 3. Planning & Scheduling\Base
+		lineageTag: dc9d3f80-eda9-4fe4-93ba-a200e250261a
+
+	/// Suma de horas de trabajo cargadas por los tecnicos, segun el contexto de filtro activo (fecha, area, tecnico).
+	measure 'Horas de Trabajo Totales' = SUM('Cargos Laborales'[Horas de Trabajo])
+		formatString: #,0.0
+		displayFolder: 3. Planning & Scheduling\Base
+		lineageTag: 3452d5f4-e0a3-4560-9484-53a75c1f0265
+
+	/// Porcentaje de horas de trabajo cargadas por companias tercerizadas (proxy: Compania distinta de Royal Canin) sobre el total de horas.
+	measure '% Horas Tercerizadas' = DIVIDE(CALCULATE([Horas de Trabajo Totales], 'Cargos Laborales'[Es Tercerizado] = TRUE), [Horas de Trabajo Totales])
+		formatString: 0.0%
+		displayFolder: 3. Planning & Scheduling\KPIs
+		lineageTag: df0ca563-eb20-4534-b9ae-bb8cb6c7dead
+
+	/// Porcentaje del catalogo de repuestos que se encuentra actualmente sin stock (Stock = 0).
+	measure '% de Stockouts' = DIVIDE(CALCULATE(COUNTROWS(Partes), Partes[En Stockout] = TRUE), COUNTROWS(Partes))
+		formatString: 0.0%
+		displayFolder: 4. Stockroom Management\KPIs
+		lineageTag: 85fbc644-5972-48f9-ae57-f78ab145e64d
+
+	/// Valor estimado del stock actual en pesos argentinos, usando el ultimo costo unitario registrado en movimientos de inventario por cada parte. No confundir con USD: la fuente (Diario de Inventario) esta en ARS.
+	measure 'Valor de Stock Actual' = SUMX(Partes, Partes[Stock] * CALCULATE(MAX('Movimientos de Inventario'[Costo Unitario]), USERELATIONSHIP('Movimientos de Inventario'[N° Parte], Partes[N° Parte])))
+		formatString: $ #,0
+		displayFolder: 4. Stockroom Management\Base
+		lineageTag: 4e7f3395-ece6-43d7-9907-67b5e69d17e6
+
+	/// Cantidad de repuestos marcados para reposicion (reorden) en el catalogo.
+	measure '# de Repuestos en Lista de Reorden' = CALCULATE(COUNTROWS(Partes), Partes[En Lista de Reorden] = TRUE)
+		formatString: #,0
+		displayFolder: 4. Stockroom Management\Base
+		lineageTag: 5992a3fb-3ab2-467f-8724-c8eea6479114
+
+	/// Costo total de repuestos consumidos segun el contexto de filtro activo (fecha, OT, area). Ahora responde directo a filtros de Orden de Trabajo gracias a la relacion activa Movimientos de Inventario -> Orden de Trabajo.
+	measure 'Costo Total de Repuestos' = SUM('Movimientos de Inventario'[Costo Total])
+		formatString: $ #,0
+		displayFolder: 4. Stockroom Management\Base
+		lineageTag: c6ad8c12-8e19-4347-8440-75db92115632
+
+	/// Ordenes de trabajo con mas de un codigo de falla realmente distinto registrado (ej. una causa electrica y otra mecanica para el mismo evento, como la OT 6696). Excluye duplicados exactos de exportacion (como la OT 6268, que aparecia 2 veces con el mismo contenido).
+	measure '# de OT con Más de una Falla' = CALCULATE(COUNTROWS('Orden de Trabajo'), 'Orden de Trabajo'[# Fallas Registradas] > 1)
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: df7e814a-8850-4698-a4eb-028082e93151
+
+	/// Porcentaje acumulado para el grafico de Pareto, ordenando Area de mayor a menor cantidad de breakdowns mayores. Si se cambia la categoria del Pareto (ej. a Equipo/Activo), hay que duplicar esta medida reemplazando 'Orden de Trabajo'[Area] por el nuevo campo.
+	measure '% Acumulado Pareto (por Área)' =
+			VAR TotalGeneral = CALCULATE([# de Breakdowns Mayores], ALLSELECTED('Orden de Trabajo'[Área]))
+			VAR RankActual = RANKX(ALLSELECTED('Orden de Trabajo'[Área]), [# de Breakdowns Mayores],, DESC)
+			VAR AcumuladoHastaRank = CALCULATE([# de Breakdowns Mayores], TOPN(RankActual, ALLSELECTED('Orden de Trabajo'[Área]), [# de Breakdowns Mayores], DESC))
+			RETURN DIVIDE(AcumuladoHastaRank, TotalGeneral)
+		formatString: 0.0%
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: 49aab0b4-ada6-4543-a230-bb8fb194d588
+
+	/// Minutos de inactividad a partir de los cuales un breakdown se considera averia mayor. Se elige con el slicer 'Trigger de Avería'; 60 si no hay seleccion.
+	measure 'Trigger de Avería (min)' = SELECTEDVALUE('Trigger de Avería'[Trigger de Avería], 60)
+		formatString: 0
+		displayFolder: 1. Breakdown Elimination\Parámetros
+		lineageTag: 73161377-4063-4476-aaea-ecbcbd8f7f70
+
+	/// Porcentaje acumulado del Pareto de breakdowns FIX (PM02 - Reparacion) por Area, ordenando de mayor a menor. Criterio de Pareto confirmado por el cliente.
+	measure '% Acumulado Pareto FIX (por Área)' =
+			VAR TotalGeneral = CALCULATE([# de Breakdowns FIX], ALLSELECTED('Orden de Trabajo'[Área]))
+			VAR RankActual = RANKX(ALLSELECTED('Orden de Trabajo'[Área]), [# de Breakdowns FIX],, DESC)
+			VAR AcumuladoHastaRank = CALCULATE([# de Breakdowns FIX], TOPN(RankActual, ALLSELECTED('Orden de Trabajo'[Área]), [# de Breakdowns FIX], DESC))
+			RETURN DIVIDE(AcumuladoHastaRank, TotalGeneral)
+		formatString: 0.0%
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: 4a4248c3-ef90-4343-a1c9-0435100c53c0
+
+	/// Posicion del equipo (Descripcion del Activo) segun cantidad de breakdowns, en el contexto de filtro actual.
+	measure 'Ranking de Equipo' = IF(ISBLANK([# de Breakdowns]), BLANK(), RANKX(ALLSELECTED('Orden de Trabajo'[Descripción del Activo]), [# de Breakdowns],, DESC))
+		formatString: 0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: 361c3b90-bb1a-4fe5-ada5-a39e453bb8db
+
+	/// Breakdowns solo para los 10 equipos con mas paradas (el resto devuelve blanco, por lo que no se grafica). Usar con Descripcion del Activo en el eje.
+	measure '# de Breakdowns Top 10 Equipos' = IF([Ranking de Equipo] <= 10, [# de Breakdowns])
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\KPIs
+		lineageTag: 8b7bf052-b842-476e-b4b5-89ec8e267f2d
+
+	/// Cantidad de codigos de falla registrados en OT reactivas. Base de la tipificacion por Codigo de Actividad, Causa y Dano (ME/EL). Solo cuenta fallas con analisis cargado.
+	measure '# de Fallas Reactivas' = CALCULATE(COUNTROWS('Fallas de Orden de Trabajo'), 'Orden de Trabajo'[Tipo de Orden de Trabajo] = "PM02 - Reactivo")
+		formatString: #,0
+		displayFolder: 1. Breakdown Elimination\Base
+		lineageTag: a9685c6b-e494-4739-b6b6-f67b876f2802
+
+	/// Cantidad de ordenes de trabajo (todas las modalidades). Usar con la columna Modalidad en el eje.
+	measure '# de OT' = COUNTROWS('Orden de Trabajo')
+		formatString: #,0
+		displayFolder: 3. Planning & Scheduling\Base
+		lineageTag: ff9d7c06-7c81-4b5d-96de-6a11297193c7
+
+	/// OT correctivas o reactivas (breakfix).
+	measure '# de OT No Planeadas' = CALCULATE(COUNTROWS('Orden de Trabajo'), 'Orden de Trabajo'[Es No Planeado] = TRUE)
+		formatString: #,0
+		displayFolder: 3. Planning & Scheduling\Base
+		lineageTag: b1b2ada9-f654-4eba-afa7-12c671e9460c
+
+	/// OT no planeadas (correctivo + reactivo) sobre el total de OT.
+	measure '% de Trabajo No Planeado' = DIVIDE([# de OT No Planeadas], [# de OT])
+		formatString: 0.0%
+		displayFolder: 3. Planning & Scheduling\KPIs
+		lineageTag: 7c8d827e-115c-4727-bc56-ee156c267973
+
+	/// OT abiertas (O) o en espera (H) con horas cargadas, contadas desde Cargos Laborales. Permite ver el backlog por tecnico/compañia (cuadrilla).
+	measure 'Backlog de OT por Técnico' = CALCULATE(DISTINCTCOUNT('Cargos Laborales'[N° OT]), 'Cargos Laborales'[Estado de WO] IN {"O", "H"})
+		formatString: #,0
+		displayFolder: 3. Planning & Scheduling\Base
+		lineageTag: 52d8a9a4-dbbb-47a2-a54b-33c4aa4ff284
+
+	/// Objetivo de % Cumplimiento BDA para el tacometro. Se elige con el slicer 'Objetivo Cumplimiento BDA'; 80% si no hay seleccion.
+	measure 'Objetivo Cumplimiento BDA' = SELECTEDVALUE('Objetivo Cumplimiento BDA'[Objetivo Cumplimiento BDA], 0.8)
+		formatString: 0%
+		displayFolder: 2. Ciclo de Vida BDA\Parámetros
+		lineageTag: afbe6231-9fa7-4dfc-b583-a7ff26262a3d
+
+	/// Devuelve rojo si hay BDA abiertos hace mas de 30 dias, verde si no. Se usa para formato condicional de la tarjeta de alerta.
+	measure 'Color Alerta BDA' = IF([# de BDA Abiertos + 30 Dias] > 0, "#E2001A", "#2C6B2F")
+		displayFolder: 2. Ciclo de Vida BDA\KPIs
+		lineageTag: 1a680f59-da8e-4725-904f-d21e11304ad4
+
+	/// Ícono SVG de estado correcto (círculo con tilde, verde de éxito de la guía de Royal Canin). Pieza base reutilizada por las medidas de ícono de estado.
+	measure 'Ícono Éxito' = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23008900' d='M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z'/></svg>"
+		isHidden
+		displayFolder: 5. Íconos\Base
+		lineageTag: d75e1281-3c34-456a-a25f-9462db0fea7d
+		dataCategory: ImageUrl
+
+	/// Ícono SVG de estado crítico (círculo con cruz, rojo de peligro de la guía de Royal Canin). Pieza base reutilizada por las medidas de ícono de estado.
+	measure 'Ícono Error' = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%23C03344' d='M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z'/></svg>"
+		isHidden
+		displayFolder: 5. Íconos\Base
+		lineageTag: 0847eb3d-efb4-4534-b127-45d8b737d059
+		dataCategory: ImageUrl
+
+	/// Ícono SVG de advertencia (triángulo con signo de exclamación, naranja de advertencia de la guía de Royal Canin). Pieza base reutilizada por las medidas de ícono de estado.
+	measure 'Ícono Advertencia' = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23EE8B00' d='M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937 0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154 0l239.94 416.028zM288 354c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z'/></svg>"
+		isHidden
+		displayFolder: 5. Íconos\Base
+		lineageTag: f16f015e-afd7-422d-b905-a1905d445ff1
+		dataCategory: ImageUrl
+
+	/// Ícono SVG de reloj (turquesa informativo de la guía de Royal Canin) para elementos en proceso. Pieza base reutilizada por las medidas de ícono de estado.
+	measure 'Ícono En Curso' = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%235CA9AD' d='M256,8C119,8,8,119,8,256S119,504,256,504,504,393,504,256,393,8,256,8Zm92.49,313h0l-20,25a16,16,0,0,1-22.49,2.5h0l-67-49.72a40,40,0,0,1-15-31.23V112a16,16,0,0,1,16-16h32a16,16,0,0,1,16,16V256l58,42.5A16,16,0,0,1,348.49,321Z'/></svg>"
+		isHidden
+		displayFolder: 5. Íconos\Base
+		lineageTag: a1c1908d-9c89-4fbb-be12-d579b9ebecc6
+		dataCategory: ImageUrl
+
+	/// Ícono SVG de cruz en gris (secundario de la guía de Royal Canin) para elementos cancelados o descartados. Pieza base reutilizada por las medidas de ícono de estado.
+	measure 'Ícono Cancelado' = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 25'><path fill='%23808285' d='M25.148 2.935l-9.791 9.79 9.065 9.066-2.357 2.357L13 15.082l-9.065 9.066-2.357-2.357 9.065-9.066-9.79-9.79L3.208.578 13 10.368l9.79-9.79 2.358 2.357z'/></svg>"
+		isHidden
+		displayFolder: 5. Íconos\Base
+		lineageTag: f3ef9f40-7e25-4952-ad13-b14404291f63
+		dataCategory: ImageUrl
+
+	/// Ícono de la tarjeta de alerta de BDA: error si hay BDA abiertos hace más de 30 días, éxito si no. Misma regla que [Color Alerta BDA].
+	measure 'Ícono Alerta BDA' = IF([# de BDA Abiertos + 30 Dias] > 0, [Ícono Error], [Ícono Éxito])
+		displayFolder: 5. Íconos\Estado
+		lineageTag: 57d908bb-b6ec-498c-8d1d-213c64a65378
+		dataCategory: ImageUrl
+
+	/// Ícono de cumplimiento de BDA: éxito si el % de Cumplimiento BDA alcanza el objetivo elegido en el slicer, error si no llega. Sin ícono si no hay datos.
+	measure 'Ícono Cumplimiento BDA' =
+			VAR Cumplimiento = [% Cumplimiento BDA]
+			RETURN
+			    IF(
+			        ISBLANK(Cumplimiento),
+			        BLANK(),
+			        IF(Cumplimiento >= [Objetivo Cumplimiento BDA], [Ícono Éxito], [Ícono Error])
+			    )
+		displayFolder: 5. Íconos\Estado
+		lineageTag: 12fec24f-8e31-47bc-893a-2bd0b134683b
+		dataCategory: ImageUrl
+
+	/// Ícono por BDA para tablas de detalle: éxito si está Cerrado, error si sigue abierto hace más de 30 días, reloj si está En Curso y advertencia si está Abierto. Usar con el BDA en las filas.
+	measure 'Ícono Estado del BDA' =
+			VAR Estado = SELECTEDVALUE('Acciones BDA'[Estado del BDA])
+			VAR Vencido =
+			    CALCULATE(COUNTROWS('Acciones BDA'), 'Acciones BDA'[Abierta hace más de 30 Días] = TRUE) > 0
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(Estado), BLANK(),
+			        Estado = "Cerrado", [Ícono Éxito],
+			        Vencido, [Ícono Error],
+			        Estado = "En Curso", [Ícono En Curso],
+			        [Ícono Advertencia]
+			    )
+		displayFolder: 5. Íconos\Estado
+		lineageTag: cdfe9fbc-7ff6-487d-a365-bbbca3e0a578
+		dataCategory: ImageUrl
+
+	/// Ícono por acción correctiva según su estado: Done éxito, On Going reloj, Pendiente advertencia, Cancelado cruz gris. Las acciones sin estado cargado quedan sin ícono. Usar con la acción en las filas.
+	measure 'Ícono Estado de Acción' =
+			SWITCH(
+			    SELECTEDVALUE('Acciones BDA'[Estado]),
+			    "Done", [Ícono Éxito],
+			    "On Going", [Ícono En Curso],
+			    "Pendiente", [Ícono Advertencia],
+			    "Cancelado", [Ícono Cancelado],
+			    BLANK()
+			)
+		displayFolder: 5. Íconos\Estado
+		lineageTag: c8fef7ce-3768-46a1-9599-cba816146e61
+		dataCategory: ImageUrl
+
+	column Medidas
+		isHidden
+		lineageTag: 9055d788-7303-40d7-b382-708d02e582da
+		isNameInferred
+		sourceColumn: [Medidas]
+
+	partition _Medidas = calculated
+		mode: import
+		source = DATATABLE("Medidas", STRING, {{""}})
+

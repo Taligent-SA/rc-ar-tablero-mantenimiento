@@ -1,0 +1,7 @@
+# Power BI (PBIP) - archivos locales / cache
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+*.bak
+
+# Respaldos manuales (el historial de git los reemplaza)
+_respaldo_antes_de_iconos/

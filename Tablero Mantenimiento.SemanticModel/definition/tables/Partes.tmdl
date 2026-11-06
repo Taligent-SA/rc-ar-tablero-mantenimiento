@@ -1,0 +1,63 @@
+/// Dimensión de repuestos/partes del catálogo de stock. Grano: 1 fila por N° de Parte.
+table Partes
+	lineageTag: a438d47b-4dd9-4f4f-b84b-288ed8b51cb7
+
+	column 'N° Parte Interno'
+		dataType: int64
+		isHidden
+		lineageTag: 35354a51-f159-44c8-9a60-534eb03a1cc9
+		sourceColumn: N° Parte Interno
+
+	column 'N° Parte'
+		dataType: string
+		lineageTag: b6537f3c-9b51-4a6c-84b2-37e8c0aeb835
+		sourceColumn: N° Parte
+
+	column Descripción
+		dataType: string
+		lineageTag: ac880e5e-812b-436f-9544-e6f6da700254
+		sourceColumn: Descripción
+
+	column Stock
+		dataType: double
+		lineageTag: aff8e300-b3b7-4afb-9bd0-019c3828f2aa
+		sourceColumn: Stock
+
+	column Fabricante
+		dataType: string
+		lineageTag: 13fd779d-306c-4fe8-bfa0-d1ba50345a67
+		sourceColumn: Fabricante
+
+	column 'N° Parte Fabricante'
+		dataType: string
+		lineageTag: 09bf69fc-05e4-4034-8a42-f34d0a381f7f
+		sourceColumn: N° Parte Fabricante
+
+	column 'N° Parte Proveedor'
+		dataType: string
+		lineageTag: cee4a7c9-5990-4752-b3b4-98a67063dd33
+		sourceColumn: N° Parte Proveedor
+
+	column 'En Lista de Reorden'
+		dataType: boolean
+		lineageTag: b36b9800-e553-4033-8ddf-be1401cfb952
+		sourceColumn: En Lista de Reorden
+
+	column 'En Stockout'
+		dataType: boolean
+		lineageTag: 18f42dcc-50a2-453c-a50f-8a623535c5ff
+		sourceColumn: En Stockout
+
+	partition Partes = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaCarpeta & "Partes.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    Renombrado = Table.RenameColumns(Encabezados, {{"Número", "N° Parte Interno"},{"Número de pieza", "N° Parte"},{"Número de pieza del fabricante", "N° Parte Fabricante"},{"Número de pieza del proveedor", "N° Parte Proveedor"},{"En la lista de reordenamiento", "En Lista de Reorden"}}),
+				    Tipos = Table.TransformColumnTypes(Renombrado, {{"N° Parte Interno", Int64.Type},{"Stock", type number},{"En Lista de Reorden", type logical}}),
+				    AgregarStockout = Table.AddColumn(Tipos, "En Stockout", each [Stock] = 0, type logical),
+				    QuitarDuplicados = Table.Distinct(AgregarStockout, {"N° Parte"})
+				in
+				    QuitarDuplicados
+

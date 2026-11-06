@@ -1,0 +1,218 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/3.3.0/schema.json",
+  "themeCollection": {
+    "baseTheme": {
+      "name": "Fluent2-CY26SU08",
+      "reportVersionAtImport": {
+        "visual": "2.12.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "RoyalCanin.json",
+      "reportVersionAtImport": {
+        "visual": "2.12.0",
+        "report": "3.4.0",
+        "page": "2.3.1"
+      },
+      "type": "SharedResources"
+    }
+  },
+  "objects": {
+    "section": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspacePane": [
+      {
+        "properties": {
+          "expanded": {
+            "expr": {
+              "Literal": {
+                "Value": "false"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "resourcePackages": [
+    {
+      "name": "SharedResources",
+      "type": "SharedResources",
+      "items": [
+        {
+          "name": "Fluent2-CY26SU08",
+          "path": "BaseThemes/Fluent2-CY26SU08.json",
+          "type": "BaseTheme"
+        },
+        {
+          "name": "RoyalCanin.json",
+          "path": "BuiltInThemes/RoyalCanin.json.json",
+          "type": "CustomTheme"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "bg_pagina_1.png",
+          "path": "bg_pagina_1.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_pagina_2.png",
+          "path": "bg_pagina_2.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_pagina_3.png",
+          "path": "bg_pagina_3.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_pagina_4.png",
+          "path": "bg_pagina_4.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_pagina_5.png",
+          "path": "bg_pagina_5.png",
+          "type": "Image"
+        },
+        {
+          "name": "bg_pagina_6.png",
+          "path": "bg_pagina_6.png",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_actividad.svg",
+          "path": "rc_kpi_actividad.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_actualizar.svg",
+          "path": "rc_kpi_actualizar.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_alerta_circulo.svg",
+          "path": "rc_kpi_alerta_circulo.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_alerta_triangulo.svg",
+          "path": "rc_kpi_alerta_triangulo.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_bandera.svg",
+          "path": "rc_kpi_bandera.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_calendario.svg",
+          "path": "rc_kpi_calendario.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_configuracion.svg",
+          "path": "rc_kpi_configuracion.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_grafico_barras.svg",
+          "path": "rc_kpi_grafico_barras.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_paquete.svg",
+          "path": "rc_kpi_paquete.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_portapapeles.svg",
+          "path": "rc_kpi_portapapeles.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_reloj.svg",
+          "path": "rc_kpi_reloj.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_tilde.svg",
+          "path": "rc_kpi_tilde.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_usuarios.svg",
+          "path": "rc_kpi_usuarios.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_kpi_vista_lista.svg",
+          "path": "rc_kpi_vista_lista.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_logo_corona_blanca.png",
+          "path": "rc_logo_corona_blanca.png",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_actividad.svg",
+          "path": "rc_nav_actividad.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_calendario.svg",
+          "path": "rc_nav_calendario.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_inicio.svg",
+          "path": "rc_nav_inicio.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_paquete.svg",
+          "path": "rc_nav_paquete.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_portapapeles.svg",
+          "path": "rc_nav_portapapeles.svg",
+          "type": "Image"
+        },
+        {
+          "name": "rc_nav_vista_lista.svg",
+          "path": "rc_nav_vista_lista.svg",
+          "type": "Image"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "useStylableVisualContainerHeader": true,
+    "exportDataMode": "AllowSummarized",
+    "defaultDrillFilterOtherVisuals": true,
+    "allowChangeFilterTypes": true,
+    "useEnhancedTooltips": true,
+    "useDefaultAggregateDisplayName": true
+  }
+}

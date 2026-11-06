@@ -1,0 +1,179 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.10.0/schema.json",
+  "name": "e3a243dbc36a45829902",
+  "position": {
+    "x": 299,
+    "y": 769,
+    "z": 1170,
+    "height": 250,
+    "width": 1570,
+    "tabOrder": 1170
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "N° OT"
+                }
+              },
+              "queryRef": "Orden de Trabajo.N° OT"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "Descripción Breve"
+                }
+              },
+              "queryRef": "Orden de Trabajo.Descripción Breve"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "Descripción del Activo"
+                }
+              },
+              "queryRef": "Orden de Trabajo.Descripción del Activo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "Estado de WO"
+                }
+              },
+              "queryRef": "Orden de Trabajo.Estado de WO"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "Prioridad"
+                }
+              },
+              "queryRef": "Orden de Trabajo.Prioridad"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orden de Trabajo"
+                    }
+                  },
+                  "Property": "Modalidad"
+                }
+              },
+              "queryRef": "Orden de Trabajo.Modalidad"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E2001A'"
+                    }
+                  }
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Lato'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

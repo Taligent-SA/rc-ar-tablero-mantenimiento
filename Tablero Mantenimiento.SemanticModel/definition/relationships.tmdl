@@ -1,0 +1,44 @@
+relationship MovInventario_Partes
+	fromColumn: 'Movimientos de Inventario'.'N° Parte'
+	toColumn: Partes.'N° Parte'
+
+relationship CargosLaborales_FechaInicio_Calendario
+	fromColumn: 'Cargos Laborales'.'Fecha Inicio'
+	toColumn: Calendario.Fecha
+
+relationship MovInventario_Fecha_Calendario
+	fromColumn: 'Movimientos de Inventario'.'Fecha Transacción'
+	toColumn: Calendario.Fecha
+
+relationship AccionesBDA_FechaApertura_Calendario
+	fromColumn: 'Acciones BDA'.'Fecha de Apertura'
+	toColumn: Calendario.Fecha
+
+relationship Fallas_OrdenDeTrabajo
+	fromColumn: 'Fallas de Orden de Trabajo'.'N° OT'
+	toColumn: 'Orden de Trabajo'.'N° OT'
+
+relationship CargosLaborales_OrdenDeTrabajo
+	fromColumn: 'Cargos Laborales'.'N° OT'
+	toColumn: 'Orden de Trabajo'.'N° OT'
+
+relationship MovInventario_OrdenDeTrabajo
+	fromColumn: 'Movimientos de Inventario'.'N° OT'
+	toColumn: 'Orden de Trabajo'.'N° OT'
+
+relationship Fallas_Fecha_Calendario
+	fromColumn: 'Fallas de Orden de Trabajo'.'Fecha Inicio Inactividad'
+	toColumn: Calendario.Fecha
+
+relationship Fallas_CodigoActividad
+	fromColumn: 'Fallas de Orden de Trabajo'.'Código de Actividad 1 (Clave)'
+	toColumn: 'Código de Actividad'.Código
+
+relationship Fallas_CodigoCausa
+	fromColumn: 'Fallas de Orden de Trabajo'.'Código de Causa 1 (Clave)'
+	toColumn: 'Código de Causa'.Código
+
+relationship Fallas_CodigoDano
+	fromColumn: 'Fallas de Orden de Trabajo'.'Código de Daño 1 (Clave)'
+	toColumn: 'Código de Daño'.Código
+

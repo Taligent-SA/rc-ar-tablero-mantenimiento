@@ -1,0 +1,24 @@
+/// Dimensión legenda: códigos AC de tipificación de actividad de mantenimiento realizada.
+table 'Código de Actividad'
+	lineageTag: 99491d1a-c32f-4b1e-8374-e2080ec38a10
+
+	column Código
+		lineageTag: 4939c0c6-9894-4094-a5af-5bc86019532d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Código]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Descripción
+		lineageTag: eaf067d7-f3d9-4aec-9401-0ebd168aedae
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Descripción]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Código de Actividad' = calculated
+		mode: import
+		source = DATATABLE("Código", STRING, "Descripción", STRING, {{"AC01","Ajustar"},{"AC02","Alinear"},{"AC03","Balancear"},{"AC04","Cegar (instalar/quitar)"},{"AC05","Pegar (adhesivo)"},{"AC06","Calibrar"},{"AC07","Limpiar"},{"AC08","Configurar"},{"AC09","Drenar/Llenar"},{"AC10","Lavado (flushing)"},{"AC11","Enfriamiento forzado"},{"AC12","Instalar"},{"AC13","Lubricar"},{"AC14","Reparar"},{"AC15","Reemplazar"},{"AC16","Reiniciar/Resetear"},{"AC17","Restaurar/Rearmar a especificación"},{"AC18","Rotar"},{"AC19","Sanitizar"},{"AC20","Configurar (ajuste de holgura/interferencia)"},{"AC21","Terminar (ej. cableado)"},{"AC22","Ajustar (tornillos/uniones)"},{"AC23","Desbloquear"}})
+

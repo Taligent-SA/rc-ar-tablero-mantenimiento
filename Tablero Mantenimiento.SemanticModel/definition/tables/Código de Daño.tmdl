@@ -1,0 +1,32 @@
+/// Dimensión legenda: códigos ME (mecánico) y EL (eléctrico) de tipificación del daño observado.
+table 'Código de Daño'
+	lineageTag: 22adf6bb-bf95-4cfc-89a9-f857f133535f
+
+	column Código
+		lineageTag: c9420029-fe68-4949-bc13-f45e249ef338
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Código]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Descripción
+		lineageTag: 3ea6816a-fb8b-45fe-848d-b620f50e046c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Descripción]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo
+		lineageTag: 0ba2a67f-b00f-484b-9d21-0987533cedc0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Tipo]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Código de Daño' = calculated
+		mode: import
+		source = DATATABLE("Código", STRING, "Descripción", STRING, "Tipo", STRING, {{"ME01","Abrasión (frotamiento)","Mecánico"},{"ME02","Doblado","Mecánico"},{"ME03","Pandeamiento","Mecánico"},{"ME04","Corroído","Mecánico"},{"ME05","Agrietado","Mecánico"},{"ME06","Delaminado","Mecánico"},{"ME07","Erosionado","Mecánico"},{"ME08","Vibración excesiva","Mecánico"},{"ME09","Deshilachado","Mecánico"},{"ME10","Congelado","Mecánico"},{"ME11","Sobrecalentamiento","Mecánico"},{"ME12","Fugas","Mecánico"},{"ME13","Flojo/Resbalando","Mecánico"},{"ME14","Sobrecarga/Atascado","Mecánico"},{"ME15","Picado (pitting)","Mecánico"},{"ME16","Perforaciones","Mecánico"},{"ME17","Rozamiento","Mecánico"},{"ME18","Roto/Desgarrado","Mecánico"},{"ME19","Gripado/Atascado","Mecánico"},{"ME20","Cortado/Seccionado","Mecánico"},{"ME21","Desgastado","Mecánico"},{"EL01","Cortocircuito (falla a tierra)","Eléctrico"},{"EL02","Sobrecarga (pérdida de carga)","Eléctrico"},{"EL03","Tensión de suministro alta (picos, transitorios)","Eléctrico"},{"EL04","Tensión baja","Eléctrico"},{"EL05","Daño por agua","Eléctrico"},{"EL06","Daño por sobretemperatura (calor, fuego)","Eléctrico"},{"EL07","Conexiones rotas/sueltas","Eléctrico"},{"EL08","Oxidación/corrosión","Eléctrico"},{"EL09","Pérdida/mala interpretación de comunicaciones","Eléctrico"},{"EL10","Falla de software","Eléctrico"},{"EL11","Configuración/Calibración","Eléctrico"}})
+

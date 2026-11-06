@@ -1,0 +1,191 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 175.92422504693386,
+        "y": 291.72244912845997
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 0
+          },
+          "nodeIndex": "Acciones BDA",
+          "nodeLineageTag": "b68a46e8-7691-4615-9cf3-553bc64ba75e",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 18.543007043246121,
+            "y": 380.80437680105757
+          },
+          "nodeIndex": "Cargos Laborales",
+          "nodeLineageTag": "593c7d99-8f10-4e19-b44c-e25d26106557",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 86.069149691607663,
+            "y": 790.05057427605311
+          },
+          "nodeIndex": "Movimientos de Inventario",
+          "nodeLineageTag": "41289fd1-6a94-4098-a8a7-1ed4046c15c8",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 709.37268989093127,
+            "y": 1095.4299947980574
+          },
+          "nodeIndex": "Partes",
+          "nodeLineageTag": "a438d47b-4dd9-4f4f-b84b-288ed8b51cb7",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1704,
+            "y": 86
+          },
+          "nodeIndex": "Código de Actividad",
+          "nodeLineageTag": "99491d1a-c32f-4b1e-8374-e2080ec38a10",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1988,
+            "y": 86
+          },
+          "nodeIndex": "Código de Causa",
+          "nodeLineageTag": "50569328-1674-4343-b734-5b0c3f104908",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1345.3198767009121,
+            "y": 0
+          },
+          "nodeIndex": "Código de Daño",
+          "nodeLineageTag": "22adf6bb-bf95-4cfc-89a9-f857f133535f",
+          "size": {
+            "height": 479.080937750286,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 861.84121121280725,
+            "y": 97.492623931218844
+          },
+          "nodeIndex": "Calendario",
+          "nodeLineageTag": "733da11a-c118-4659-96e9-978a3fd238cd",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2840,
+            "y": 50
+          },
+          "nodeIndex": "_Medidas",
+          "nodeLineageTag": "b87a16bb-65ea-4217-a81e-6437d0184b08",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 347.069510968018,
+            "y": 590.02588696727867
+          },
+          "nodeIndex": "Orden de Trabajo",
+          "nodeLineageTag": "2c648d50-e50f-41c4-a894-0a0e8dbee916",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1343.6739668543323,
+            "y": 781.76522341137047
+          },
+          "nodeIndex": "Fallas de Orden de Trabajo",
+          "nodeLineageTag": "98fcd342-32bf-4676-abbb-4c184de70e54",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2326.7836561263643,
+            "y": 529.80800148788762
+          },
+          "nodeIndex": "Objetivo Cumplimiento BDA",
+          "nodeLineageTag": "57f5d46a-3cf6-458d-905d-2e35bdde690e",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1465.2572986231989,
+            "y": 1217.1238159897871
+          },
+          "nodeIndex": "Trigger de Avería",
+          "nodeLineageTag": "cb22754e-1145-4884-be79-c24dd3aa42de",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 44.905697313103992,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

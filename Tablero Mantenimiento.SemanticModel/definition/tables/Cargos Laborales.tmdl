@@ -1,0 +1,141 @@
+/// Grano: 1 fila por carga de horas de un técnico sobre una orden de trabajo.
+table 'Cargos Laborales'
+	lineageTag: 593c7d99-8f10-4e19-b44c-e25d26106557
+
+	column 'N° OT'
+		dataType: int64
+		lineageTag: 847340d2-245b-4c31-8352-393b0027ed0a
+		summarizeBy: sum
+		sourceColumn: N° OT
+
+		annotation SummarizationSetBy = Automatic
+
+	column Técnico
+		dataType: string
+		lineageTag: 94d96bb0-e4e8-4e9c-b489-f7aee211ec10
+		summarizeBy: none
+		sourceColumn: Técnico
+
+		annotation SummarizationSetBy = Automatic
+
+	column Compañía
+		dataType: string
+		lineageTag: d99eb3d9-2451-48ec-9e3e-253b00726796
+		summarizeBy: none
+		sourceColumn: Compañía
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha Inicio'
+		dataType: dateTime
+		lineageTag: d5480a62-7f91-4a63-b237-33145542cb35
+		summarizeBy: none
+		sourceColumn: Fecha Inicio
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha Fin'
+		dataType: dateTime
+		lineageTag: 2d0bc992-d67e-4c41-bc6b-3fc1fcd9129e
+		summarizeBy: none
+		sourceColumn: Fecha Fin
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Horas de Trabajo'
+		dataType: double
+		formatString: #,0.0
+		lineageTag: d8e2996b-0b56-4dfb-9c60-04552ca5a285
+		summarizeBy: sum
+		sourceColumn: Horas de Trabajo
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Descripción de la OT'
+		dataType: string
+		lineageTag: c11f9d3c-8572-45cd-9166-98214e3a5933
+		summarizeBy: none
+		sourceColumn: Descripción de la OT
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Estado de WO'
+		dataType: string
+		lineageTag: 8845dd6c-929a-4624-ab1c-57f1d1300e89
+		summarizeBy: none
+		sourceColumn: Estado de WO
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Tipo de Orden de Trabajo'
+		dataType: string
+		lineageTag: 6cfb3e09-2b07-4d4d-9228-ad320af63393
+		summarizeBy: none
+		sourceColumn: Tipo de Orden de Trabajo
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Estado del Trabajo'
+		dataType: string
+		lineageTag: 99e9d311-03ea-4895-988a-83e012cde730
+		summarizeBy: none
+		sourceColumn: Estado del Trabajo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Activo
+		dataType: string
+		lineageTag: 93a08f05-20e3-4ee4-b1af-d3896f3e3163
+		summarizeBy: none
+		sourceColumn: Activo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Subárea
+		dataType: string
+		lineageTag: 11dbdacd-8e42-4447-b9ee-c75f5a594a18
+		summarizeBy: none
+		sourceColumn: Subárea
+
+		annotation SummarizationSetBy = Automatic
+
+	column Área
+		dataType: string
+		lineageTag: 3ef94dd3-9c72-4987-9547-431cdeba7791
+		summarizeBy: none
+		sourceColumn: Área
+
+		annotation SummarizationSetBy = Automatic
+
+	column Proyecto
+		dataType: string
+		lineageTag: 4bcfeb69-5a33-4df7-94d2-4188cf77e9db
+		summarizeBy: none
+		sourceColumn: Proyecto
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Es Tercerizado'
+		dataType: boolean
+		lineageTag: 1a08c9ff-77a4-457a-a7be-61c1e3847b7c
+		summarizeBy: none
+		sourceColumn: Es Tercerizado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Cargos Laborales' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaCarpeta & "Cargos-Laborales.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    Renombrado = Table.RenameColumns(Encabezados, {{"N°OT", "N° OT"},{"Blanco", "Técnico"},{"Orden de trabajo", "Descripción de la OT"},{"Tipo de orden de trabajo", "Tipo de Orden de Trabajo"},{"Estado del trabajo", "Estado del Trabajo"},{"Horas de trabajo", "Horas de Trabajo"}}),
+				    Tipos = Table.TransformColumnTypes(Renombrado, {{"N° OT", Int64.Type},{"Horas de Trabajo", type number}}),
+				    ParsearFechaTexto = (v as any) as nullable datetime =>
+				        if v = null or v = "" then null else try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy HH:mm", Culture="es-AR"]) otherwise null,
+				    ConFechas = Table.TransformColumns(Tipos, {{"Fecha Inicio", ParsearFechaTexto, type nullable datetime},{"Fecha Fin", ParsearFechaTexto, type nullable datetime}}),
+				    AgregarTercerizado = Table.AddColumn(ConFechas, "Es Tercerizado", each [Compañía] <> null and Text.Trim([Compañía]) <> "Royal Canin", type logical),
+				    LimpiarTecnico = Table.TransformColumns(AgregarTercerizado, {{"Técnico", each Text.Trim(Text.From(_)), type text}})
+				in
+				    LimpiarTecnico
+

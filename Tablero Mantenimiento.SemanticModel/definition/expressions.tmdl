@@ -1,0 +1,6 @@
+/// Carpeta donde estan los archivos fuente exportados de eMaint (WO, Cargos Laborales, Diario de Inventario, Partes, Acciones BDA).
+expression RutaCarpeta = "G:\Mi unidad\RC - Tablero Mantenimiento\Exportaciones\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: a592a5fe-20c5-4aca-b342-ff63c8ef7155
+
+	annotation PBI_ResultType = Text
+

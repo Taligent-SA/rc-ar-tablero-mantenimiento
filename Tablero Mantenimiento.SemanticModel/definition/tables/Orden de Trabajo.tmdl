@@ -1,0 +1,147 @@
+/// Dimensión/cabecera de órdenes de trabajo. Grano: 1 fila por N° OT. Consolida los atributos que son iguales para todas las fallas de una misma OT (área, activo, tipo, prioridad) y el tiempo de inactividad total del incidente (min/max entre sus fallas), para no duplicar minutos cuando una OT tiene más de un código de falla (ej. OT 6696: una falla eléctrica y otra mecánica sobre el mismo evento).
+table 'Orden de Trabajo'
+	lineageTag: 2c648d50-e50f-41c4-a894-0a0e8dbee916
+
+	column 'N° OT'
+		dataType: int64
+		lineageTag: f8207cde-9b0f-48b4-a7f1-ae77e7ab6092
+		sourceColumn: N° OT
+
+	column 'Descripción Breve'
+		dataType: string
+		lineageTag: 485e15d6-ab99-476c-baf6-bea602e80f05
+		sourceColumn: Descripción Breve
+
+	column Activo
+		dataType: string
+		lineageTag: 2ff83836-d597-41d5-a6cd-b05da3f50d88
+		sourceColumn: Activo
+
+	column 'Descripción del Activo'
+		dataType: string
+		lineageTag: b7ee54a7-527d-4c91-a141-1500ae0748e9
+		sourceColumn: Descripción del Activo
+
+	column Área
+		dataType: string
+		lineageTag: a361bf9a-3ccb-4832-869e-75b114dc6a75
+		sourceColumn: Área
+
+	column Subárea
+		dataType: string
+		lineageTag: 214276ac-62d8-4c90-a686-ff1639804985
+		sourceColumn: Subárea
+
+	column 'Tipo de Solicitud'
+		dataType: string
+		lineageTag: 757e4edb-8d64-4c3e-bf52-9b4d40f11964
+		sourceColumn: Tipo de Solicitud
+
+	column 'Tipo de Orden de Trabajo'
+		dataType: string
+		lineageTag: a961ae3a-2323-4426-96a6-6d29bf213691
+		sourceColumn: Tipo de Orden de Trabajo
+
+	column 'Tipo de Actividad'
+		dataType: string
+		lineageTag: 7606940e-de6d-4128-82f3-8e99f80f73dc
+		sourceColumn: Tipo de Actividad
+
+	column Prioridad
+		dataType: string
+		lineageTag: 3e398188-9c51-4f26-9408-f6b7efe9d0db
+		sourceColumn: Prioridad
+
+	column 'Estado de WO'
+		dataType: string
+		lineageTag: 8a6e4a34-454f-44c8-b006-765c0907a353
+		sourceColumn: Estado de WO
+
+	column 'Estado del Trabajo'
+		dataType: string
+		lineageTag: 939b5895-9c28-45e4-8fcf-a53c421c403e
+		sourceColumn: Estado del Trabajo
+
+	column Proyecto
+		dataType: string
+		lineageTag: 06ac2942-c640-458a-991f-11ea372e98f0
+		sourceColumn: Proyecto
+
+	column 'Fecha Inicio Inactividad'
+		dataType: dateTime
+		lineageTag: 6315c27c-55c2-48bd-92f7-df3f53da8555
+		sourceColumn: Fecha Inicio Inactividad
+
+	column 'Fecha Fin Inactividad'
+		dataType: dateTime
+		lineageTag: 27386d4b-386a-4114-b811-9d2772bb2b3c
+		sourceColumn: Fecha Fin Inactividad
+
+	column '# Fallas Registradas'
+		dataType: int64
+		lineageTag: 0c6a16c2-52a5-4a2b-9f3a-304c71448bda
+		sourceColumn: # Fallas Registradas
+
+	column 'Minutos de Inactividad'
+		dataType: double
+		formatString: #,0
+		lineageTag: f0b3908e-f930-4eed-a576-ef9a4ce126a5
+		sourceColumn: Minutos de Inactividad
+
+	column 'Supera Trigger 60 min'
+		dataType: boolean
+		isHidden
+		lineageTag: 4f192b69-da5c-4704-8dc1-f7a593b8eb4d
+		sourceColumn: Supera Trigger 60 min
+
+	column 'Es No Planeado'
+		dataType: boolean
+		lineageTag: 00bb9fbc-4593-4528-b816-7a343828bf30
+		sourceColumn: Es No Planeado
+
+	/// Clasifica la OT como planeada (preventivo/regulatorio), no planeada (correctivo/reactivo) u otra (mejora/renovacion).
+	column Modalidad = IF('Orden de Trabajo'[Es No Planeado], "No planeado (correctivo / reactivo)", IF('Orden de Trabajo'[Tipo de Orden de Trabajo] IN {"PM03 - Preventivo", "PM05 - Regulatorio"}, "Planeado", "Otro (mejora / renovación)"))
+		dataType: string
+		lineageTag: 63472b77-652c-4ace-87f0-a996f82aede1
+		summarizeBy: none
+
+	partition 'Orden de Trabajo' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaCarpeta & "RVP-Base-de-Datos-PBI-WO.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    Seleccionadas = Table.SelectColumns(Encabezados, {"N°OT","Breve descripción","Activo","Descripción del activo","Área","Subárea","Tipo de solicitud","Tipo de orden de trabajo","Tipo de actividad","Prioridad","Estado de WO","Estado del trabajo","Proyecto","Inicio (Tiempo de inactividad)","Fin (Tiempo de inactividad)"}),
+				    Renombrado = Table.RenameColumns(Seleccionadas, {{"N°OT","N° OT"},{"Breve descripción","Descripción Breve"},{"Descripción del activo","Descripción del Activo"},{"Tipo de solicitud","Tipo de Solicitud"},{"Tipo de orden de trabajo","Tipo de Orden de Trabajo"},{"Tipo de actividad","Tipo de Actividad"},{"Estado del trabajo","Estado del Trabajo"},{"Inicio (Tiempo de inactividad)","Fecha Inicio Inactividad Texto"},{"Fin (Tiempo de inactividad)","Fecha Fin Inactividad Texto"}}),
+				    TiposOT = Table.TransformColumnTypes(Renombrado, {{"N° OT", Int64.Type}}),
+				    ParsearFechaTexto = (v as any) as nullable datetime =>
+				        if v = null or v = "" then null
+				        else try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy HH:mm", Culture="es-AR"]) otherwise
+				             try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy", Culture="es-AR"]) otherwise null,
+				    ConFechas = Table.TransformColumns(TiposOT, {{"Fecha Inicio Inactividad Texto", ParsearFechaTexto, type nullable datetime},{"Fecha Fin Inactividad Texto", ParsearFechaTexto, type nullable datetime}}),
+				    QuitarDuplicadosExactos = Table.Distinct(ConFechas),
+				    Agrupado = Table.Group(QuitarDuplicadosExactos, {"N° OT"}, {
+				        {"Descripción Breve", each List.First(_[Descripción Breve]), type text},
+				        {"Activo", each List.First(_[Activo]), type text},
+				        {"Descripción del Activo", each List.First(_[Descripción del Activo]), type text},
+				        {"Área", each List.First(_[Área]), type text},
+				        {"Subárea", each List.First(_[Subárea]), type text},
+				        {"Tipo de Solicitud", each List.First(_[Tipo de Solicitud]), type text},
+				        {"Tipo de Orden de Trabajo", each List.First(_[Tipo de Orden de Trabajo]), type text},
+				        {"Tipo de Actividad", each List.First(_[Tipo de Actividad]), type text},
+				        {"Prioridad", each List.First(_[Prioridad]), type text},
+				        {"Estado de WO", each List.First(_[Estado de WO]), type text},
+				        {"Estado del Trabajo", each List.First(_[Estado del Trabajo]), type text},
+				        {"Proyecto", each List.First(_[Proyecto]), type text},
+				        {"Fecha Inicio Inactividad", each List.Min(List.RemoveNulls(_[Fecha Inicio Inactividad Texto])), type nullable datetime},
+				        {"Fecha Fin Inactividad", each List.Max(List.RemoveNulls(_[Fecha Fin Inactividad Texto])), type nullable datetime},
+				        {"# Fallas Registradas", each Table.RowCount(_), Int64.Type}
+				    }),
+				    AgregarMinutos = Table.AddColumn(Agrupado, "Minutos de Inactividad", each
+				        if [Fecha Inicio Inactividad] = null or [Fecha Fin Inactividad] = null then null
+				        else Duration.TotalMinutes([Fecha Fin Inactividad] - [Fecha Inicio Inactividad]), type nullable number),
+				    AgregarFlagBDA = Table.AddColumn(AgregarMinutos, "Supera Trigger 60 min", each [Minutos de Inactividad] <> null and [Minutos de Inactividad] >= 60, type logical),
+				    AgregarNoPlaneado = Table.AddColumn(AgregarFlagBDA, "Es No Planeado", each [Tipo de Orden de Trabajo] = "PM02 - Reactivo" or [Tipo de Orden de Trabajo] = "PM01 - Correctivo", type logical)
+				in
+				    AgregarNoPlaneado
+

@@ -1,0 +1,24 @@
+/// Dimensión legenda: códigos CC de tipificación de causa raíz de la falla.
+table 'Código de Causa'
+	lineageTag: 50569328-1674-4343-b734-5b0c3f104908
+
+	column Código
+		lineageTag: ccb51a8a-beaa-4b75-827d-9b2309fffc1e
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Código]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Descripción
+		lineageTag: cd0202f3-374d-4d20-b2e1-6fdaddb650f5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Descripción]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Código de Causa' = calculated
+		mode: import
+		source = DATATABLE("Código", STRING, "Descripción", STRING, {{"CC01","Condiciones básicas"},{"CC02","Condiciones de mantenimiento"},{"CC03","Condiciones ambientales"},{"CC04","Condiciones de operación"},{"CC05","Condiciones de instalación"},{"CC06","Condiciones de fabricación"},{"CC07","Condiciones de especificación"},{"CC08","Condiciones de diseño"}})
+

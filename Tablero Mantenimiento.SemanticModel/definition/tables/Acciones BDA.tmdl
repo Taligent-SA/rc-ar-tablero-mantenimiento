@@ -1,0 +1,130 @@
+/// Grano: 1 fila por acción correctiva tomada sobre un BDA (Breakdown Analysis).
+table 'Acciones BDA'
+	lineageTag: b68a46e8-7691-4615-9cf3-553bc64ba75e
+
+	column 'N° Acción'
+		dataType: int64
+		lineageTag: 10e49265-0f77-4e99-b681-ff7bf49fa2c6
+		summarizeBy: sum
+		sourceColumn: N° Acción
+
+		annotation SummarizationSetBy = Automatic
+
+	column Acción
+		dataType: string
+		lineageTag: 0eedd824-5282-4fb2-9838-450ea4ff0246
+		summarizeBy: none
+		sourceColumn: Acción
+
+		annotation SummarizationSetBy = Automatic
+
+	column Responsable
+		dataType: string
+		lineageTag: f1472556-aad0-4bbf-9bfe-d35beca6df31
+		summarizeBy: none
+		sourceColumn: Responsable
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha de Acción'
+		dataType: dateTime
+		lineageTag: 187a7dac-60f0-46a9-b4af-f5e045b1607f
+		summarizeBy: none
+		sourceColumn: Fecha de Acción
+
+		annotation SummarizationSetBy = Automatic
+
+	column BDA
+		dataType: string
+		lineageTag: d4dca9f6-c55c-4fbf-9426-24bc6badf899
+		summarizeBy: none
+		sourceColumn: BDA
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Descripción del BDA'
+		dataType: string
+		lineageTag: 0c29289a-a37a-4864-82f6-3bead0717d57
+		summarizeBy: none
+		sourceColumn: Descripción del BDA
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estado
+		dataType: string
+		lineageTag: 8e49550f-19dc-4f00-8df4-51f267b20c57
+		summarizeBy: none
+		sourceColumn: Estado
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha de Apertura'
+		dataType: dateTime
+		lineageTag: 071db663-68d8-4b80-9d33-0dbf7eff1379
+		summarizeBy: none
+		sourceColumn: Fecha de Apertura
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Fecha de Cierre'
+		dataType: dateTime
+		lineageTag: 1cf8743c-b918-4888-9bfa-f4cc75d34cd0
+		summarizeBy: none
+		sourceColumn: Fecha de Cierre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Período de Apertura'
+		dataType: string
+		lineageTag: 96f22c79-90a7-4311-a72c-f0a935d89ca8
+		summarizeBy: none
+		sourceColumn: Período de Apertura
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Período de Cierre'
+		dataType: string
+		lineageTag: dfa53541-ac70-4ad4-afb6-8cb2de54d8a4
+		summarizeBy: none
+		sourceColumn: Período de Cierre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Abierta hace más de 30 Días'
+		dataType: boolean
+		lineageTag: f0e2def9-ddbd-488e-97d2-61f5403c5371
+		summarizeBy: none
+		sourceColumn: Abierta hace más de 30 Días
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Dias transcurridos desde la apertura del BDA hasta hoy. Se repite igual para todas las acciones de un mismo BDA (usar con valores unicos de BDA en tablas de detalle).
+	column 'Días desde Apertura' = IF('Acciones BDA'[Fecha de Apertura] = BLANK(), BLANK(), DATEDIFF('Acciones BDA'[Fecha de Apertura], TODAY(), DAY))
+		dataType: int64
+		formatString: #,0
+		displayFolder: Calculado
+		lineageTag: 4a3407ec-7469-43c0-88fa-41381ad0faa7
+
+	/// Estado a nivel BDA: Cerrado si todas sus acciones estan Done/Cancelado; En Curso si alguna esta On Going; Abierto en el resto.
+	column 'Estado del BDA' =
+			VAR Abiertas = CALCULATE(COUNTROWS('Acciones BDA'), ALLEXCEPT('Acciones BDA', 'Acciones BDA'[BDA]), 'Acciones BDA'[Estado] <> "Done", 'Acciones BDA'[Estado] <> "Cancelado")
+			VAR EnCurso = CALCULATE(COUNTROWS('Acciones BDA'), ALLEXCEPT('Acciones BDA', 'Acciones BDA'[BDA]), 'Acciones BDA'[Estado] = "On Going")
+			RETURN IF(Abiertas = 0, "Cerrado", IF(EnCurso > 0, "En Curso", "Abierto"))
+		dataType: string
+		lineageTag: 53097210-fe05-47d3-9b40-cb93bc8d9b80
+		summarizeBy: none
+
+	partition 'Acciones BDA' = m
+		mode: import
+		source =
+				let
+				    Origen = Excel.Workbook(File.Contents(RutaCarpeta & "Acciones por Usuario BDA.xlsx"), null, true),
+				    Hoja = Origen{[Item="Acciones Power BI", Kind="Sheet"]}[Data],
+				    Encabezados = Table.PromoteHeaders(Hoja, [PromoteAllScalars=true]),
+				    Renombrado = Table.RenameColumns(Encabezados, {{"ID_Accion", "N° Acción"},{"Action List ", "Acción"},{"Who", "Responsable"},{"When", "Fecha de Acción"},{"ID_BDA_BI", "BDA"},{"BDA_Descripcion", "Descripción del BDA"},{"Status", "Estado"},{"Periodo Apertura", "Período de Apertura"},{"Periodo Cierre", "Período de Cierre"}}),
+				    Tipos = Table.TransformColumnTypes(Renombrado, {{"N° Acción", Int64.Type},{"Fecha de Acción", type datetime},{"Fecha de Apertura", type datetime},{"Fecha de Cierre", type datetime}}),
+				    NormalizarEstado = Table.TransformColumns(Tipos, {{"Estado", each let s = Text.Trim(Text.Lower(Text.From(_))) in if s = "on going" then "On Going" else if s = "done" then "Done" else if s = "pendiente" then "Pendiente" else if s = "cancelado" or s = "cancelada" then "Cancelado" else _, type text}}),
+				    AgregarAbierta30 = Table.AddColumn(NormalizarEstado, "Abierta hace más de 30 Días", each [Estado] <> "Done" and [Estado] <> "Cancelado" and [Fecha de Apertura] <> null and Duration.Days(DateTime.LocalNow() - [Fecha de Apertura]) > 30, type logical)
+				in
+				    AgregarAbierta30
+

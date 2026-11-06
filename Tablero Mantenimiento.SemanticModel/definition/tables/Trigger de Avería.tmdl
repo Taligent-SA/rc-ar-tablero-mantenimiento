@@ -1,0 +1,16 @@
+/// Parametro (what-if) del trigger de averia mayor en minutos. Se usa con un slicer; por defecto 60 min.
+table 'Trigger de Avería'
+	lineageTag: cb22754e-1145-4884-be79-c24dd3aa42de
+
+	column 'Trigger de Avería'
+		formatString: 0
+		lineageTag: 1fe07a86-9ae4-4a62-a3cb-bb184f5b08d6
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Trigger de Avería' = calculated
+		mode: import
+		source = GENERATESERIES(10, 240, 5)
+

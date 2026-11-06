@@ -1,0 +1,129 @@
+/// Detalle de análisis de falla por OT. Grano: 1 fila por código de falla registrado (una OT normalmente tiene 1 fila; puede tener más de una cuando se diagnosticó más de una causa/daño para el mismo evento, ej. OT 6696 con una falla eléctrica EL10 y otra mecánica ME13). Usar esta tabla para el Pareto por código; usar Orden de Trabajo para contar breakdowns/minutos sin duplicar.
+table 'Fallas de Orden de Trabajo'
+	lineageTag: 98fcd342-32bf-4676-abbb-4c184de70e54
+
+	column 'N° OT'
+		dataType: int64
+		lineageTag: 4d3ad01c-6b0c-4839-90a1-3f2f7276b02c
+		sourceColumn: N° OT
+
+	column 'N° Análisis de Falla'
+		dataType: int64
+		lineageTag: e2061906-936f-40d8-ab28-ed68ef4729ed
+		sourceColumn: N° Análisis de Falla
+
+	column 'Fecha Inicio Inactividad'
+		dataType: dateTime
+		lineageTag: 47aa7ab4-0ba8-475c-9183-9fd9ab4cebac
+		sourceColumn: Fecha Inicio Inactividad
+
+	column 'Fecha Fin Inactividad'
+		dataType: dateTime
+		lineageTag: addc7ee8-1c93-409f-8ff3-38935b86652d
+		sourceColumn: Fecha Fin Inactividad
+
+	column 'Minutos de Inactividad'
+		dataType: double
+		lineageTag: 3002305d-d18a-4f7e-afee-08c6c6054c38
+		sourceColumn: Minutos de Inactividad
+
+	column 'Fecha Inicio Reparación'
+		dataType: dateTime
+		lineageTag: 5b3b91fc-ca7d-421f-ba56-6851a668f130
+		sourceColumn: Fecha Inicio Reparación
+
+	column 'Fecha Fin Reparación'
+		dataType: dateTime
+		lineageTag: 724284a1-1d54-45ce-95d8-a7f24161662c
+		sourceColumn: Fecha Fin Reparación
+
+	column 'Código de Daño 1'
+		dataType: string
+		lineageTag: 0d9c13ca-e7b7-435d-80ab-b80a42ce7b72
+		sourceColumn: Código de Daño 1
+
+	column 'Código de Daño 2'
+		dataType: string
+		lineageTag: 6b4ab937-8bfe-4162-9421-0ebdcafe032e
+		sourceColumn: Código de Daño 2
+
+	column 'Código de Actividad 1'
+		dataType: string
+		lineageTag: 2355d4d8-276f-4b8f-a07d-ec170d0025bf
+		sourceColumn: Código de Actividad 1
+
+	column 'Código de Actividad 2'
+		dataType: string
+		lineageTag: e54e4e1b-b219-4afe-9610-460bb171df44
+		sourceColumn: Código de Actividad 2
+
+	column 'Código de Causa 1'
+		dataType: string
+		lineageTag: 15718f53-5bd6-4847-9e88-5ea86196e0df
+		sourceColumn: Código de Causa 1
+
+	column 'Código de Causa 2'
+		dataType: string
+		lineageTag: 77435454-cf07-4e1e-b5c6-1cb899bc0976
+		sourceColumn: Código de Causa 2
+
+	column 'Tipo de Daño'
+		dataType: string
+		lineageTag: 0010fac2-4856-49f5-ab31-c314b7951172
+		sourceColumn: Tipo de Daño
+
+	column 'Código de Daño 1 (Clave)'
+		dataType: string
+		isHidden
+		lineageTag: af8f3893-b0c4-46a1-b01b-52cb3f41b893
+		sourceColumn: Código de Daño 1 (Clave)
+
+	column 'Código de Actividad 1 (Clave)'
+		dataType: string
+		isHidden
+		lineageTag: 7b6646a1-d408-4c10-9aec-d22a891b0c8b
+		sourceColumn: Código de Actividad 1 (Clave)
+
+	column 'Código de Causa 1 (Clave)'
+		dataType: string
+		isHidden
+		lineageTag: 8cd921b9-8b80-4851-93b1-08f8553ea6bb
+		sourceColumn: Código de Causa 1 (Clave)
+
+	column 'N° Falla (Interno)'
+		dataType: int64
+		isHidden
+		lineageTag: 4024a02d-33d4-40c3-ac0e-473c90b8b0e2
+		sourceColumn: N° Falla (Interno)
+
+	partition 'Fallas de Orden de Trabajo' = m
+		mode: import
+		source =
+				let
+				    Origen = Csv.Document(File.Contents(RutaCarpeta & "RVP-Base-de-Datos-PBI-WO.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars=true]),
+				    Seleccionadas = Table.SelectColumns(Encabezados, {"N°OT","N°AF","Inicio (Tiempo de inactividad)","Fin (Tiempo de inactividad)","Tiempo de inactividad (minutos) (se calcula después de guardar)","Inicio del tiempo de reparación","Fin del tiempo de reparación","Código de daño eléctrico/mecánico 1","Código de daño eléctrico/mecánico 2","Códigos de actividad 1","Código de actividad 2","Códigos de causa 1","Códigos de causa 2"}),
+				    Renombrado = Table.RenameColumns(Seleccionadas, {{"N°OT","N° OT"},{"N°AF","N° Análisis de Falla"},{"Inicio (Tiempo de inactividad)","Fecha Inicio Inactividad"},{"Fin (Tiempo de inactividad)","Fecha Fin Inactividad"},{"Tiempo de inactividad (minutos) (se calcula después de guardar)","Minutos de Inactividad"},{"Inicio del tiempo de reparación","Fecha Inicio Reparación"},{"Fin del tiempo de reparación","Fecha Fin Reparación"},{"Código de daño eléctrico/mecánico 1","Código de Daño 1"},{"Código de daño eléctrico/mecánico 2","Código de Daño 2"},{"Códigos de actividad 1","Código de Actividad 1"},{"Código de actividad 2","Código de Actividad 2"},{"Códigos de causa 1","Código de Causa 1"},{"Códigos de causa 2","Código de Causa 2"}}),
+				    AgregarClave = Table.AddColumn(Renombrado, "ClaveDedupe", each Text.Combine(List.Transform(Record.FieldValues(Record.RemoveFields(_, {"N° Análisis de Falla"})), each Text.From(_)), "|"), type text),
+				    QuitarDuplicadosExactos = Table.Distinct(AgregarClave, {"ClaveDedupe"}),
+				    QuitarClave = Table.RemoveColumns(QuitarDuplicadosExactos, {"ClaveDedupe"}),
+				    TiposBase = Table.TransformColumnTypes(QuitarClave, {{"N° OT", Int64.Type}, {"N° Análisis de Falla", Int64.Type}, {"Minutos de Inactividad", type number}}),
+				    ParsearFechaTexto = (v as any) as nullable datetime =>
+				        if v = null or v = "" then null
+				        else try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy HH:mm", Culture="es-AR"]) otherwise
+				             try DateTime.FromText(Text.From(v), [Format="dd-MM-yyyy", Culture="es-AR"]) otherwise null,
+				    ConFechas = Table.TransformColumns(TiposBase, {{"Fecha Inicio Inactividad", ParsearFechaTexto, type nullable datetime},{"Fecha Fin Inactividad", ParsearFechaTexto, type nullable datetime},{"Fecha Inicio Reparación", ParsearFechaTexto, type nullable datetime},{"Fecha Fin Reparación", ParsearFechaTexto, type nullable datetime}}),
+				    AgregarTipoDano = Table.AddColumn(ConFechas, "Tipo de Daño", each
+				        if [Código de Daño 1] <> null and Text.StartsWith(Text.Trim(Text.From([Código de Daño 1])), "ME") then "Mecánico"
+				        else if [Código de Daño 1] <> null and Text.StartsWith(Text.Trim(Text.From([Código de Daño 1])), "EL") then "Eléctrico"
+				        else null, type text),
+				    ExtraerCodigo = (v as any) as nullable text =>
+				        if v = null or Text.From(v) = "" then null
+				        else Text.Trim(Text.BeforeDelimiter(Text.From(v) & " ", " ")),
+				    AgregarCod1 = Table.AddColumn(AgregarTipoDano, "Código de Daño 1 (Clave)", each ExtraerCodigo([Código de Daño 1]), type text),
+				    AgregarCod2 = Table.AddColumn(AgregarCod1, "Código de Actividad 1 (Clave)", each ExtraerCodigo([Código de Actividad 1]), type text),
+				    AgregarCod3 = Table.AddColumn(AgregarCod2, "Código de Causa 1 (Clave)", each ExtraerCodigo([Código de Causa 1]), type text),
+				    AgregarIndice = Table.AddIndexColumn(AgregarCod3, "N° Falla (Interno)", 1, 1, Int64.Type)
+				in
+				    AgregarIndice
+

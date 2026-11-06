@@ -1,0 +1,77 @@
+/// Tabla de fechas continua (2024-2026) para inteligencia de tiempo.
+table Calendario
+	lineageTag: 733da11a-c118-4659-96e9-978a3fd238cd
+	dataCategory: Time
+
+	column Fecha
+		isUnique
+		formatString: General Date
+		lineageTag: 0339bc7d-8bdf-4249-8088-5287bc6cbfc3
+		summarizeBy: none
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Año
+		formatString: 0
+		lineageTag: c709daf5-435a-4034-ab38-fcd00ecfe8ec
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Año]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		lineageTag: 8db56b46-931e-42a0-a7ee-c51f4c61ccbd
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Trimestre]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes
+		formatString: 0
+		lineageTag: 78f4d74c-f1c5-4510-a22d-a79759753385
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Mes]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nombre de Mes'
+		lineageTag: 78b79bd3-0b7b-4bad-a04f-ce1b68e5b807
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Nombre de Mes]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Año-Mes
+		lineageTag: 2829d0e9-6742-4167-bc3a-d2f173aedbbe
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Año-Mes]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Semana del Año'
+		formatString: 0
+		lineageTag: ff6c3fea-602b-49e3-a6ff-6bc4d3626502
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Semana del Año]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Día de la Semana'
+		lineageTag: 8f74f241-0db9-45ae-bbf5-d6b8002196e5
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Día de la Semana]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Calendario = calculated
+		mode: import
+		source = ADDCOLUMNS(CALENDAR(MIN('Acciones BDA'[Fecha de Apertura]), MAX('Acciones BDA'[Fecha de Cierre])), "Año", YEAR([Date]), "Trimestre", "T" & FORMAT([Date], "Q"), "Mes", MONTH([Date]), "Nombre de Mes", FORMAT([Date], "MMMM"), "Año-Mes", FORMAT([Date], "YYYY-MM"), "Semana del Año", WEEKNUM([Date], 2), "Día de la Semana", FORMAT([Date], "dddd"))
+
